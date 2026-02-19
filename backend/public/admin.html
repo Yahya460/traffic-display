@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة التحكم</title>
+  <style>
+    body{font-family:Tahoma,Arial;margin:0;background:#f6f7fb}
+    header{background:#0b3b73;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+    main{padding:16px;max-width:1200px;margin:auto}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px}
+    h3{margin:0 0 10px}
+    label{display:block;margin:8px 0 4px;font-size:13px;opacity:.8}
+    input,textarea,button,select{width:100%;padding:10px;border-radius:10px;border:1px solid #ddd}
+    button{cursor:pointer;border:none;background:#0b5ed7;color:#fff;margin-top:10px}
+    .row-actions button{width:auto;margin:0 4px;padding:6px 10px;border-radius:8px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid #e5e7eb;padding:8px;font-size:13px;vertical-align:top}
+    th{background:#f3f4f6}
+    .top{display:flex;gap:8px;align-items:center}
+    .top input{width:220px}
+    .hint{font-size:12px;opacity:.7;margin-top:8px}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:900px){ .grid{grid-template-columns:1fr} .top{flex-direction:column;align-items:stretch} .top input{width:100%} .two{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<header>
+  <div>لوحة التحكم</div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button onclick="openTV()" style="background:#111827">فتح شاشة TV</button>
+    <button onclick="logout()" style="background:#374151">خروج</button>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h3>تسجيل الدخول</h3>
+    <div class="top">
+      <input id="pin" placeholder="أدخل الرمز 2026" />
+      <button onclick="login()" style="width:auto">دخول</button>
+    </div>
+    <div class="hint">بعد الدخول سيتم تفعيل الحفظ/التعديل/الحذف.</div>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="card">
+    <h3>إعدادات التنقل + الشريط</h3>
+    <label>مدة العرض لكل جدول (ثواني)</label>
+    <input id="durationSec" type="number" value="10" />
+    <label>نص الشريط المتحرك</label>
+    <textarea id="ticker" rows="2" placeholder="اكتب تنبيه متحرك..."></textarea>
+
+    <div class="two">
+      <div>
+        <label>تعديل التاريخ الهجري (أيام)</label>
+        <select id="hijriAdjustDays">
+          <option value="-2">-2</option>
+          <option value="-1">-1</option>
+          <option value="0" selected>0</option>
+          <option value="1">+1</option>
+          <option value="2">+2</option>
+        </select>
+      </div>
+      <div>
+        <label>تعديل التاريخ الميلادي (أيام)</label>
+        <select id="gregAdjustDays">
+          <option value="-2">-2</option>
+          <option value="-1">-1</option>
+          <option value="0" selected>0</option>
+          <option value="1">+1</option>
+          <option value="2">+2</option>
+        </select>
+      </div>
+    </div>
+
+    <button onclick="saveSettings()">حفظ الإعدادات</button>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="card">
+    <h3>رخص السياقة (أدخل العدد لكل خانة)</h3>
+    <div class="two">
+      <div><label>رخص السياقة (رجال)</label><input id="lic_men" type="number" value="0" /></div>
+      <div><label>رخص السياقة (نساء)</label><input id="lic_women" type="number" value="0" /></div>
+      <div><label>الثقيل + معدات</label><input id="lic_heavy" type="number" value="0" /></div>
+      <div><label>الدراجات النارية</label><input id="lic_motor" type="number" value="0" /></div>
+      <div><label>التحكم والسيطرة</label><input id="lic_control" type="number" value="0" /></div>
+      <div><label>المنحدر</label><input id="lic_slope" type="number" value="0" /></div>
+    </div>
+    <button onclick="saveLicenses()">حفظ رخص السياقة</button>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>إضافة برنامج تدريبي</h3>
+      <label>القاعة</label><input id="t_hall" placeholder="قاعة رقم (1)" />
+      <label>اسم البرنامج</label><input id="t_title" placeholder="اسم البرنامج التدريبي" />
+      <label>من (تاريخ)</label><input id="t_from" type="date" />
+      <label>إلى (تاريخ)</label><input id="t_to" type="date" />
+      <label>ملاحظات</label><input id="t_notes" placeholder="الفترة الصباحية..." />
+      <button onclick="addTraining()">حفظ</button>
+    </div>
+
+    <div class="card">
+      <h3>إضافة برنامج توعوي</h3>
+      <label>اسم الجهة</label><input id="a_hall" placeholder="اسم الجهة المنعقد بها الفعالية" />
+      <label>اسم البرنامج</label><input id="a_title" placeholder="اسم البرنامج التوعوي" />
+      <label>العدد</label><input id="a_count" type="number" placeholder="20" />
+      <label>من (اختياري)</label><input id="a_from" type="date" />
+      <label>إلى (اختياري)</label><input id="a_to" type="date" />
+      <label>ملاحظات</label><input id="a_notes" placeholder="ولاية صحار..." />
+      <button onclick="addAwareness()">حفظ</button>
+    </div>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="card">
+    <h3>قائمة البرامج التدريبية</h3>
+    <div id="training_table"></div>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="card">
+    <h3>قائمة البرامج التوعوية</h3>
+    <div id="awareness_table"></div>
+  </div>
+</main>
+
+<script>
+let ADMIN_TOKEN = localStorage.getItem("admin_token") || "";
+
+function authHeaders(){ return {"Content-Type":"application/json","Authorization":"Bearer " + ADMIN_TOKEN}; }
+function openTV(){ window.open("/tv","_blank"); }
+function logout(){ localStorage.removeItem("admin_token"); ADMIN_TOKEN=""; alert("تم تسجيل الخروج"); }
+
+async function login(){
+  const pin = document.getElementById("pin").value.trim();
+  const r = await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin})});
+  if(!r.ok){ alert("رمز خاطئ"); return; }
+  const data = await r.json();
+  ADMIN_TOKEN = data.token;
+  localStorage.setItem("admin_token", ADMIN_TOKEN);
+  alert("تم الدخول بنجاح");
+}
+
+function toDateOnlyISO(d){ if(!d) return ""; try{ return new Date(d).toISOString().slice(0,10);}catch{ return ""; } }
+
+function tableHTML(items, cols, type){
+  let html = "<table><thead><tr>";
+  cols.forEach(c => html += `<th>${c.label}</th>`);
+  html += "<th>إجراءات</th></tr></thead><tbody>";
+  items.forEach(it=>{
+    html += "<tr>";
+    cols.forEach(c=>{
+      let v = it[c.key] ?? "";
+      if(c.key === "fromDate" || c.key === "toDate") v = toDateOnlyISO(v);
+      html += `<td>${v}</td>`;
+    });
+    html += `<td class="row-actions">
+      <button onclick='editRow("${type}","${it.id}")' style="background:#111827">تعديل</button>
+      <button onclick='deleteRow("${type}","${it.id}")' style="background:#ef4444">حذف</button>
+    </td></tr>`;
+  });
+  html += "</tbody></table>";
+  return html;
+}
+
+async function loadAll(){
+  const [t,a,s] = await Promise.all([
+    fetch("/api/training").then(r=>r.json()),
+    fetch("/api/awareness").then(r=>r.json()),
+    fetch("/api/settings").then(r=>r.json())
+  ]);
+
+  document.getElementById("durationSec").value = Math.max(1, Math.round((s.durationMs||10000)/1000));
+  document.getElementById("ticker").value = s.ticker || "";
+  document.getElementById("hijriAdjustDays").value = String(s.hijriAdjustDays ?? 0);
+  document.getElementById("gregAdjustDays").value = String(s.gregAdjustDays ?? 0);
+
+  document.getElementById("lic_men").value = s.lic_men ?? 0;
+  document.getElementById("lic_women").value = s.lic_women ?? 0;
+  document.getElementById("lic_heavy").value = s.lic_heavy ?? 0;
+  document.getElementById("lic_motor").value = s.lic_motor ?? 0;
+  document.getElementById("lic_control").value = s.lic_control ?? 0;
+  document.getElementById("lic_slope").value = s.lic_slope ?? 0;
+
+  document.getElementById("training_table").innerHTML = tableHTML(t, [
+    {key:"hall", label:"القاعة"},
+    {key:"title", label:"البرنامج"},
+    {key:"fromDate", label:"من"},
+    {key:"toDate", label:"إلى"},
+    {key:"notes", label:"الملاحظات"}
+  ], "training");
+
+  document.getElementById("awareness_table").innerHTML = tableHTML(a, [
+    {key:"hall", label:"اسم الجهة"},
+    {key:"title", label:"البرنامج"},
+    {key:"count", label:"العدد"},
+    {key:"fromDate", label:"من"},
+    {key:"toDate", label:"إلى"},
+    {key:"notes", label:"الملاحظات"}
+  ], "awareness");
+}
+
+async function saveSettings(){
+  if(!ADMIN_TOKEN){ alert("سجّل الدخول أولاً"); return; }
+  const durationSec = Number(document.getElementById("durationSec").value || 10);
+  const ticker = document.getElementById("ticker").value || "";
+  const hijriAdjustDays = parseInt(document.getElementById("hijriAdjustDays").value,10) || 0;
+  const gregAdjustDays = parseInt(document.getElementById("gregAdjustDays").value,10) || 0;
+
+  const r = await fetch("/api/settings",{
+    method:"POST",
+    headers:authHeaders(),
+    body:JSON.stringify({durationMs:durationSec*1000,ticker,hijriAdjustDays,gregAdjustDays})
+  });
+
+  if(!r.ok){ alert("فشل حفظ الإعدادات"); return; }
+  alert("تم حفظ الإعدادات");
+}
+
+async function saveLicenses(){
+  if(!ADMIN_TOKEN){ alert("سجّل الدخول أولاً"); return; }
+  const body = {
+    lic_men: Number(document.getElementById("lic_men").value || 0),
+    lic_women: Number(document.getElementById("lic_women").value || 0),
+    lic_heavy: Number(document.getElementById("lic_heavy").value || 0),
+    lic_motor: Number(document.getElementById("lic_motor").value || 0),
+    lic_control: Number(document.getElementById("lic_control").value || 0),
+    lic_slope: Number(document.getElementById("lic_slope").value || 0),
+  };
+
+  const r = await fetch("/api/settings",{method:"POST",headers:authHeaders(),body:JSON.stringify(body)});
+  if(!r.ok){ alert("فشل الحفظ"); return; }
+  alert("تم حفظ رخص السياقة");
+}
+
+async function addTraining(){
+  if(!ADMIN_TOKEN){ alert("سجّل الدخول أولاً"); return; }
+  const body = {
+    hall: document.getElementById("t_hall").value,
+    title: document.getElementById("t_title").value,
+    fromDate: document.getElementById("t_from").value,
+    toDate: document.getElementById("t_to").value,
+    notes: document.getElementById("t_notes").value
+  };
+  const r = await fetch("/api/training",{method:"POST",headers:authHeaders(),body:JSON.stringify(body)});
+  if(!r.ok){ alert("فشل الحفظ"); return; }
+  await loadAll(); alert("تم الحفظ");
+}
+
+async function addAwareness(){
+  if(!ADMIN_TOKEN){ alert("سجّل الدخول أولاً"); return; }
+  const body = {
+    hall: document.getElementById("a_hall").value,
+    title: document.getElementById("a_title").value,
+    count: Number(document.getElementById("a_count").value || 0),
+    fromDate: document.getElementById("a_from").value || null,
+    toDate: document.getElementById("a_to").value || null,
+    notes: document.getElementById("a_notes").value
+  };
+  const r = await fetch("/api/awareness",{method:"POST",headers:authHeaders(),body:JSON.stringify(body)});
+  if(!r.ok){ alert("فشل الحفظ"); return; }
+  await loadAll(); alert("تم الحفظ");
+}
+
+async function deleteRow(type,id){
+  if(!ADMIN_TOKEN){ alert("سجّل الدخول أولاً"); return; }
+  if(!confirm("هل أنت متأكد من الحذف؟")) return;
+  const url = type === "training" ? `/api/training/${id}` : `/api/awareness/${id}`;
+  const r = await fetch(url,{method:"DELETE",headers:authHeaders()});
+  if(!r.ok){ alert("فشل الحذف"); return; }
+  await loadAll();
+}
+
+async function editRow(type,id){
+  if(!ADMIN_TOKEN){ alert("سجّل الدخول أولاً"); return; }
+  const listUrl = type === "training" ? "/api/training" : "/api/awareness";
+  const items = await fetch(listUrl).then(r=>r.json());
+  const item = items.find(x=>x.id===id);
+  if(!item){ alert("لم يتم العثور على السجل"); return; }
+
+  const hallLabel = type === "awareness" ? "اسم الجهة" : "القاعة";
+  const hall = prompt(hallLabel + ":", item.hall ?? "");
+  if(hall === null) return;
+  const title = prompt("اسم البرنامج:", item.title ?? "");
+  if(title === null) return;
+
+  if(type === "training"){
+    const fromDate = prompt("من (YYYY-MM-DD):", toDateOnlyISO(item.fromDate));
+    if(fromDate === null) return;
+    const toDate = prompt("إلى (YYYY-MM-DD):", toDateOnlyISO(item.toDate));
+    if(toDate === null) return;
+    const notes = prompt("الملاحظات:", item.notes ?? "");
+    if(notes === null) return;
+
+    const r = await fetch(`/api/training/${id}`,{method:"PATCH",headers:authHeaders(),
+      body:JSON.stringify({hall,title,fromDate,toDate,notes})
+    });
+    if(!r.ok){ alert("فشل التعديل"); return; }
+    await loadAll(); return;
+  }
+
+  const count = prompt("العدد:", item.count ?? "");
+  if(count === null) return;
+  const fromDate = prompt("من (اختياري YYYY-MM-DD):", item.fromDate ? toDateOnlyISO(item.fromDate) : "");
+  if(fromDate === null) return;
+  const toDate = prompt("إلى (اختياري YYYY-MM-DD):", item.toDate ? toDateOnlyISO(item.toDate) : "");
+  if(toDate === null) return;
+  const notes = prompt("الملاحظات:", item.notes ?? "");
+  if(notes === null) return;
+
+  const r = await fetch(`/api/awareness/${id}`,{method:"PATCH",headers:authHeaders(),
+    body:JSON.stringify({hall,title,count:Number(count||0),fromDate:fromDate||null,toDate:toDate||null,notes})
+  });
+  if(!r.ok){ alert("فشل التعديل"); return; }
+  await loadAll();
+}
+
+loadAll();
+</script>
+</body>
+</html>

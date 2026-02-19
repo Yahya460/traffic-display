@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>تسجيل الدخول</title>
+  <style>
+    body{font-family:Tahoma,Arial;display:grid;place-items:center;height:100vh;margin:0;background:#f6f7fb}
+    .box{width:320px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px}
+    h2{margin:0 0 12px}
+    input,button{width:100%;padding:10px;border-radius:10px;border:1px solid #ddd;font-size:16px}
+    button{border:none;background:#0b5ed7;color:#fff;margin-top:10px;cursor:pointer}
+    .err{color:#b00020;margin-top:10px;display:none}
+    .hint{opacity:.7;margin-top:10px;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>تسجيل الدخول</h2>
+    <label>رمز الحماية</label>
+    <input id="pin" inputmode="numeric" placeholder="2026" />
+    <button onclick="login()">دخول</button>
+    <div id="err" class="err">رمز الحماية غير صحيح</div>
+    <div class="hint">بعد الدخول سيتم تحويلك إلى لوحة التحكم</div>
+  </div>
+
+<script>
+async function login(){
+  const pin = document.getElementById("pin").value.trim();
+  const err = document.getElementById("err");
+  err.style.display = "none";
+  try{
+    const r = await fetch("/api/auth/login", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ pin })
+    });
+    if(!r.ok) throw new Error();
+    const data = await r.json();
+    localStorage.setItem("admin_token", data.token);
+    location.href = "/admin";
+  }catch(e){
+    err.style.display = "block";
+  }
+}
+</script>
+</body>
+</html>

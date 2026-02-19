@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model TrainingProgram {
+  id       String   @id @default(cuid())
+  hall     String
+  title    String
+  fromDate DateTime
+  toDate   DateTime
+  notes    String?
+  createdAt DateTime @default(now())
+}
+
+model AwarenessProgram {
+  id       String   @id @default(cuid())
+  hall     String      // اسم الجهة
+  title    String
+  count    Int      @default(0)
+  fromDate DateTime?
+  toDate   DateTime?
+  notes    String?
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id               Int      @id @default(1)
+  durationMs       Int      @default(10000)
+  ticker           String   @default("")
+
+  // ✅ تعديل التاريخ (رسمي ومحفوظ بالقاعدة)
+  hijriAdjustDays  Int      @default(0)
+  gregAdjustDays   Int      @default(0)
+
+  // ✅ إحصائيات رخص السياقة محفوظة بالقاعدة
+  lic_men          Int      @default(0)
+  lic_women        Int      @default(0)
+  lic_heavy        Int      @default(0)
+  lic_motor        Int      @default(0)
+  lic_control      Int      @default(0)
+  lic_slope        Int      @default(0)
+
+  updatedAt        DateTime @updatedAt
+}

@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>شاشة العرض</title>
+  <style>
+    body{margin:0;font-family:Tahoma,Arial;background:#ffffff;color:#111827}
+    header{padding:10px 16px;border-bottom:4px solid #0b3b73}
+    .headRow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .logoBox{width:90px;flex:0 0 auto;display:flex;align-items:center;justify-content:flex-start}
+    .logoBox img{max-width:90px;max-height:70px;object-fit:contain}
+    .titleBox{flex:1;text-align:center}
+    .title{font-size:26px;font-weight:700;margin:0}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:16px}
+    .wrap{padding:12px 16px}
+    h2{margin:10px 0;font-size:20px;background:#0b3b73;color:#fff;padding:8px;border-radius:10px;text-align:center}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{border:1px solid #e5e7eb;padding:8px}
+    th{background:#1f4e86;color:#fff}
+    .ticker{
+      position:fixed;left:0;right:0;bottom:0;
+      background:#0b3b73;color:#fff;
+      padding:10px 0;overflow:hidden;white-space:nowrap;
+      font-size:18px
+    }
+    /* الشريط من اليسار إلى اليمين */
+    .ticker span{display:inline-block;padding-right:100%;animation: marqueeLTR 18s linear infinite;}
+    @keyframes marqueeLTR{0%{transform:translateX(-100%)}100%{transform:translateX(0)}}
+    .muted{opacity:.85}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="headRow">
+    <div class="logoBox">
+      <img src="/logo.png" alt="شعار المعهد" onerror="this.style.display='none'">
+    </div>
+
+    <div class="titleBox">
+      <div class="title">فعاليات وبرامج معهد السلامة المرورية</div>
+      <div class="topbar">
+        <!-- ✅ بدون كلمة ميلادي -->
+        <div class="muted" id="greg"></div>
+
+        <!-- ✅ اليوم + الساعة -->
+        <div id="clock" style="font-weight:700"></div>
+
+        <!-- ✅ بدون كلمة هجري -->
+        <div class="muted" id="hijri"></div>
+      </div>
+    </div>
+
+    <div style="width:90px;flex:0 0 auto"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="content"></div>
+</div>
+
+<div class="ticker"><span id="tickerText"> </span></div>
+
+<script>
+let viewIndex = 0;
+let durationMs = 10000;
+
+function dateLong(iso){
+  try{
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("ar-OM", { day:"numeric", month:"long", year:"numeric" });
+  }catch{ return ""; }
+}
+
+function tableHTML(items, cols){
+  let html = "<table><thead><tr>";
+  cols.forEach(c => html += `<th>${c.label}</th>`);
+  html += "</tr></thead><tbody>";
+  items.forEach((it, i)=>{
+    html += "<tr>";
+    cols.forEach(c=>{
+      let v = (c.key === "__no") ? (i+1) : (it[c.key] ?? "");
+      if(c.key === "fromDate" || c.key === "toDate") v = v ? dateLong(v) : "";
+      html += `<td>${v}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</tbody></table>";
+  return html;
+}
+
+function trainingView(t){
+  return `<h2>البرامج التدريبية</h2>` + tableHTML(t, [
+    {key:"__no", label:"ت"},
+    {key:"hall", label:"القاعات"},
+    {key:"title", label:"البرامج التدريبية"},
+    {key:"fromDate", label:"من"},
+    {key:"toDate", label:"إلى"},
+    {key:"notes", label:"الملاحظات"}
+  ]);
+}
+
+function awarenessView(a){
+  return `<h2>البرامج التوعوية</h2>` + tableHTML(a, [
+    {key:"__no", label:"ت"},
+    {key:"hall", label:"اسم الجهة"},
+    {key:"title", label:"البرامج التوعوية"},
+    {key:"count", label:"العدد"},
+    {key:"fromDate", label:"من"},
+    {key:"toDate", label:"إلى"},
+    {key:"notes", label:"الملاحظات"}
+  ]);
+}
+
+function toNum(x){ const n = Number(x); return Number.isFinite(n) ? n : 0; }
+
+// هجري (تقويم عماني) + تعديل أيام من الإعدادات
+function getOmaniHijri(adjustDays = 0) {
+  const today = new Date();
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  base.setDate(base.getDate() + adjustDays);
+
+  let day = base.getDate();
+  let month = base.getMonth();
+  let year = base.getFullYear();
+
+  let m = month + 1;
+  let y = year;
+  if (m < 3) { y -= 1; m += 12; }
+
+  let a = Math.floor(y / 100);
+  let b = 2 - a + Math.floor(a / 4);
+
+  let jd = Math.floor(365.25 * (y + 4716))
+    + Math.floor(30.6001 * (m + 1))
+    + day + b - 1524;
+
+  let l = jd - 1948440 + 10632;
+  let n = Math.floor((l - 1) / 10631);
+  l = l - 10631 * n + 354;
+
+  let j = (Math.floor((10985 - l) / 5316))
+    * (Math.floor((50 * l) / 17719))
+    + (Math.floor(l / 5670))
+    * (Math.floor((43 * l) / 15238));
+
+  l = l - (Math.floor((30 - j) / 15))
+    * (Math.floor((17719 * j) / 50))
+    - (Math.floor(j / 16))
+    * (Math.floor((15238 * j) / 43)) + 29;
+
+  let hijriMonth = Math.floor((24 * l) / 709);
+  let hijriDay = l - Math.floor((709 * hijriMonth) / 24);
+  let hijriYear = 30 * n + j - 30;
+
+  const hijriMonths = [
+    "محرم","صفر","ربيع الأول","ربيع الآخر",
+    "جمادى الأولى","جمادى الآخرة","رجب","شعبان",
+    "رمضان","شوال","ذو القعدة","ذو الحجة"
+  ];
+  return `${hijriDay} ${hijriMonths[hijriMonth-1]} ${hijriYear} هـ`;
+}
+
+function gregLong(adjustDays=0){
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  d.setDate(d.getDate() + adjustDays);
+  return d.toLocaleDateString("ar-OM", { day:"numeric", month:"long", year:"numeric" });
+}
+
+function statsView(t,a, s){
+  const trainingCount = t.length;
+  const awarenessCount = a.length;
+  const awarenessPeople = a.reduce((sum,x)=>sum + (Number(x.count)||0), 0);
+
+  const lic_total =
+    toNum(s.lic_men)+toNum(s.lic_women)+toNum(s.lic_heavy)+toNum(s.lic_motor)+toNum(s.lic_control)+toNum(s.lic_slope);
+
+  const stats = [
+    ["عدد البرامج التدريبية", trainingCount],
+    ["عدد البرامج التوعوية", awarenessCount],
+    ["إجمالي عدد المشاركين (التوعوية)", awarenessPeople],
+    ["—", "—"],
+    ["إحصائيات رخص السياقة (الإجمالي)", lic_total],
+    ["رخص السياقة (رجال)", toNum(s.lic_men)],
+    ["رخص السياقة (نساء)", toNum(s.lic_women)],
+    ["الثقيل + معدات", toNum(s.lic_heavy)],
+    ["الدراجات النارية", toNum(s.lic_motor)],
+    ["التحكم والسيطرة", toNum(s.lic_control)],
+    ["المنحدر", toNum(s.lic_slope)],
+  ];
+
+  let html = `<h2>الإحصائيات</h2><table><thead><tr><th>البند</th><th>القيمة</th></tr></thead><tbody>`;
+  stats.forEach(([k,v]) => html += `<tr><td>${k}</td><td>${v}</td></tr>`);
+  html += `</tbody></table>`;
+  return html;
+}
+
+async function loadAndRender(){
+  const [t, a, s] = await Promise.all([
+    fetch("/api/training").then(r=>r.json()),
+    fetch("/api/awareness").then(r=>r.json()),
+    fetch("/api/settings").then(r=>r.json())
+  ]);
+
+  durationMs = Number(s.durationMs || 10000);
+  document.getElementById("tickerText").textContent = s.ticker || " ";
+
+  const views = [trainingView(t), awarenessView(a), statsView(t,a,s)];
+  document.getElementById("content").innerHTML = views[viewIndex];
+  viewIndex = (viewIndex + 1) % views.length;
+
+  setTimeout(loadAndRender, durationMs);
+}
+
+function tick(){
+  fetch("/api/settings")
+    .then(r=>r.json())
+    .then(s=>{
+      const now = new Date();
+
+      // ✅ اليوم + الساعة
+      const dayName = now.toLocaleDateString("ar-OM", { weekday:"long" });
+      const timeStr = now.toLocaleTimeString("ar-OM");
+      document.getElementById("clock").textContent = `${dayName} ${timeStr}`;
+
+      // ✅ بدون كلمات ميلادي/هجري
+      document.getElementById("greg").textContent = gregLong(Number(s.gregAdjustDays||0));
+      document.getElementById("hijri").textContent = getOmaniHijri(Number(s.hijriAdjustDays||0));
+    })
+    .catch(()=>{});
+}
+setInterval(tick, 1000);
+tick();
+
+loadAndRender();
+</script>
+</body>
+</html>
